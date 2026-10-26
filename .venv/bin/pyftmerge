@@ -1,0 +1,9 @@
+#!/bin/sh
+'''exec' "/home/marwan/Documents/LETI Papers/1st Master Year/МашОбуч — Машинное обучение
+Machine Learning/Laboratory work from moevm/Lab 1/.venv/bin/python3" "$0" "$@"
+' '''
+import sys
+from fontTools.merge import main
+if __name__ == '__main__':
+    sys.argv[0] = sys.argv[0].removesuffix('.exe')
+    sys.exit(main())
