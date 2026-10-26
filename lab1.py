@@ -25,6 +25,7 @@ features = df.columns.tolist()
 n_bins = 20  # ? I think it's because close to sqrt(299)...
 
 fig, axs = plt.subplots(2, 3, figsize=(14, 8))
+fig.suptitle("Figure 1 Raw data distributions before standardization", fontsize=14)
 
 for ax, feature in zip(axs.flat, features):
     ax.hist(df[feature], bins=n_bins)
@@ -63,6 +64,10 @@ print(
 )  # Check: Standardization changes the values not the number of observations or features
 
 fig, axs = plt.subplots(2, 3, figsize=(14, 8))
+fig.suptitle(
+    "Figure 2 Standardized data with StandardScaler fit on first 150 rows; all 299 rows transformed)",
+    fontsize=14,
+)
 
 for i, (ax, feature) in enumerate(zip(axs.flat, features)):
     ax.hist(data_scaled[:, i], bins=n_bins)
@@ -105,7 +110,10 @@ print("Minimums:", min_max_scaler.data_min_)
 print("Maximums:", min_max_scaler.data_max_)
 
 fig, axs = plt.subplots(2, 3, figsize=(14, 8))
-
+fig.suptitle(
+    "Figure 3 Standardized data with MinMaxScaler",
+    fontsize=14,
+)
 for i, (ax, feature) in enumerate(zip(axs.flat, features)):
     ax.hist(data_min_max_scaled[:, i], bins=n_bins)
     ax.set_title(feature)
@@ -125,3 +133,123 @@ max_abs_scaler = preprocessing.MaxAbsScaler().fit(data)
 data_max_abs_scaled = max_abs_scaler.transform(data)
 
 print("Maximum absolute values:", max_abs_scaler.max_abs_)
+
+fig, axs = plt.subplots(2, 3, figsize=(14, 8))
+fig.suptitle("Figure 4 MaxAbsScaler transformed data", fontsize=14)
+
+for i, (ax, feature) in enumerate(zip(axs.flat, features)):
+    ax.hist(data_max_abs_scaled[:, i], bins=n_bins)
+    ax.set_title(feature)
+    ax.set_xlabel("Scaled value")
+    ax.set_ylabel("Frequency")
+
+plt.tight_layout()
+plt.show()
+
+### RobustScaler
+robust_scaler = preprocessing.RobustScaler().fit(data)
+data_robust_scaled = robust_scaler.transform(data)
+
+print("Medians:", robust_scaler.center_)
+print("IQR scales:", robust_scaler.scale_)
+fig, axs = plt.subplots(2, 3, figsize=(14, 8))
+fig.suptitle("Figure 5 RobustScaler transformed data", fontsize=14)
+
+for i, (ax, feature) in enumerate(zip(axs.flat, features)):
+    ax.hist(data_robust_scaled[:, i], bins=n_bins)
+    ax.set_title(feature)
+    ax.set_xlabel("Robust-scaled value")
+    ax.set_ylabel("Frequency")
+
+plt.tight_layout()
+plt.show()
+
+
+def scale_to_range(data, new_min=-5, new_max=10):
+    old_min = data.min(axis=0)
+    old_max = data.max(axis=0)
+    span = old_max - old_min
+
+    # Avoid division by zero for constant features.
+    safe_span = np.where(span == 0, 1, span)
+
+    scaled = new_min + (data - old_min) / safe_span * (new_max - new_min)
+
+    # Constant features are mapped to new_min.
+    scaled[:, span == 0] = new_min
+
+    return scaled
+
+
+data_custom_scaled = scale_to_range(data)
+
+print("Minimums:", data_custom_scaled.min(axis=0))
+print("Maximums:", data_custom_scaled.max(axis=0))
+
+### Quantile Transdormer
+qt_uniform = preprocessing.QuantileTransformer(
+    n_quantiles=100, output_distribution="uniform", random_state=0
+).fit(data)
+
+data_quantile_scaled = qt_uniform.transform(data)
+fig.suptitle(
+    "Figure 6 QuantileTransformer transformed data (uniform output)", fontsize=14
+)
+
+fig, axs = plt.subplots(2, 3, figsize=(14, 8))
+
+for i, (ax, feature) in enumerate(zip(axs.flat, features)):
+    ax.hist(data_quantile_scaled[:, i], bins=n_bins)
+    ax.set_title(feature)
+    ax.set_xlabel("Quantile-transformed value")
+    ax.set_ylabel("Frequency")
+
+plt.tight_layout()
+plt.show()
+
+
+for n in [10, 50, 100, 299]:
+    qt_uniform = preprocessing.QuantileTransformer(
+        n_quantiles=n, output_distribution="uniform", random_state=0
+    ).fit(data)
+
+    transformed = qt_uniform.transform(data)
+
+    print(
+        f"Requested quantiles: {n}, " f"effective quantiles: {qt_uniform.n_quantiles_}"
+    )
+
+### QUantileTransformation Normal Distribution
+qt_normal = preprocessing.QuantileTransformer(
+    n_quantiles=100, output_distribution="normal", random_state=0
+).fit(data)
+
+data_quantile_normal = qt_normal.transform(data)
+
+
+## PowerTransformer
+
+pt = preprocessing.PowerTransformer(  ## based on docs we can use both  methods "yeo-johnson or box-cox" because csv data are all positive
+    method="yeo-johnson", standardize=True
+).fit(
+    data
+)
+
+data_power_scaled = pt.transform(data)
+
+print("Estimated lambdas:", pt.lambdas_)
+fig, axs = plt.subplots(2, 3, figsize=(14, 8))
+fig.suptitle(
+    "Figure 7 Power-transformed feature distributions (Yeo Johnson, standardized)",
+    fontsize=14,
+)
+for i, (ax, feature) in enumerate(zip(axs.flat, features)):
+    ax.hist(data_power_scaled[:, i], bins=n_bins)
+    ax.set_title(feature)
+    ax.set_xlabel("Power-transformed value")
+    ax.set_ylabel("Frequency")
+
+plt.tight_layout()
+plt.show()
+###
+## KBinsDiscretizer
