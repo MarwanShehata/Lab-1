@@ -97,7 +97,7 @@ print("All-data means:", scaler_all.mean_)
 print("First 150 variances:", scaler.var_)
 print("All-data variances:", scaler_all.var_)
 
-####----####
+####---- MinMaxScaler####
 min_max_scaler = preprocessing.MinMaxScaler().fit(data)
 data_min_max_scaled = min_max_scaler.transform(data)
 
@@ -119,3 +119,9 @@ print("min_:", min_max_scaler.min_)
 
 plt.tight_layout()
 plt.show()
+
+### MaxAbsScaler
+max_abs_scaler = preprocessing.MaxAbsScaler().fit(data)
+data_max_abs_scaled = max_abs_scaler.transform(data)
+
+print("Maximum absolute values:", max_abs_scaler.max_abs_)
