@@ -192,11 +192,11 @@ qt_uniform = preprocessing.QuantileTransformer(
 ).fit(data)
 
 data_quantile_scaled = qt_uniform.transform(data)
+
+fig, axs = plt.subplots(2, 3, figsize=(14, 8))
 fig.suptitle(
     "Figure 6 QuantileTransformer transformed data (uniform output)", fontsize=14
 )
-
-fig, axs = plt.subplots(2, 3, figsize=(14, 8))
 
 for i, (ax, feature) in enumerate(zip(axs.flat, features)):
     ax.hist(data_quantile_scaled[:, i], bins=n_bins)
@@ -252,4 +252,42 @@ for i, (ax, feature) in enumerate(zip(axs.flat, features)):
 plt.tight_layout()
 plt.show()
 ###
+
+
 ## KBinsDiscretizer
+
+discretizer = preprocessing.KBinsDiscretizer(
+    n_bins=[3, 4, 3, 10, 2, 4],  ## 6 bins for each column
+    encode="ordinal",  # I got an error and this was the fix #TypeError: sparse array length is ambiguous; use getnnz() or shape[0]
+    strategy="quantile",  # it was wrong because it defaulted to uniform which so I added it
+)
+
+data_discretized = discretizer.fit_transform(data)
+
+print(data_discretized)
+print("Output shape:", data_discretized.shape)
+
+fig, axs = plt.subplots(2, 3, figsize=(14, 8))
+fig.suptitle(
+    "Figure 8 KBinsDiscretizer bin discretized data",
+    fontsize=14,
+)
+for i, (ax, feature) in enumerate(zip(axs.flat, features)):
+    ax.hist(
+        data_discretized[:, i],
+        bins=np.arange([3, 4, 3, 10, 2, 4][i] + 1) - 0.5,
+        rwidth=0.8,
+    )
+    ax.set_title(feature)
+    ax.set_xlabel("Bin index")
+    ax.set_ylabel("Frequency")
+
+plt.tight_layout()
+plt.show()
+
+for feature, edges in zip(features, discretizer.bin_edges_):
+    print(f"\n{feature}")
+    print("Bin boundaries:", edges)
+
+    for i in range(len(edges) - 1):
+        print(f"Bin {i}: [{edges[i]}, {edges[i + 1]}]")
