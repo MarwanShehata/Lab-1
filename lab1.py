@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn import preprocessing
 
-df = pd.read_csv("heart_failure_clinical_records_dataset.csv")
+df= pd.read_csv("heart_failure_clinical_records_dataset.csv")
 
 df = df.drop(
     columns=[
@@ -36,7 +36,8 @@ for ax, feature in zip(axs.flat, features):
 plt.tight_layout()
 plt.show()  # data before standardization
 
-data = df.to_numpy(dtype=float)  # converting the dataframe to numpy
+data = df.to_numpy()
+# converting the dataframe to numpy
 
 # print(data.shape)
 # print(data[:5])
@@ -54,8 +55,8 @@ scaler = preprocessing.StandardScaler().fit(
 print(
     "First 150 rows means:", scaler.mean_
 )  # thismean is calculated from the first 150 rows
-print("First 150 rows variances:", scaler.var_)  # variance
-print("First 150 rows scales:", scaler.scale_)  # sqrt(var)
+print('First 150 rows variances:', scaler.var_)  # variance
+print('First 150 rows scales:', scaler.scale_)  # sqrt(var)
 
 data_scaled = scaler.transform(data)
 
@@ -86,7 +87,8 @@ print(np.std(data, axis=0, ddof=0))
 
 print(
     "Standardized means:"
-)  # sanity check for the first one: z=(x-mu)/sigma=(60.83−62.95)/12.45=−0.17 👉️ should be zero? Oh it's because it was standardized!
+)  # sanity check for the first one: z=(x-mu)/sigma=(60.83−62.95)/12.45=−0.17 👉️ shouldn't it be zero?
+# #it's because it was standardized!
 print(np.mean(data_scaled, axis=0))
 
 print("Standardized standard deviations:")
@@ -135,7 +137,7 @@ data_max_abs_scaled = max_abs_scaler.transform(data)
 print("Maximum absolute values:", max_abs_scaler.max_abs_)
 
 fig, axs = plt.subplots(2, 3, figsize=(14, 8))
-fig.suptitle("Figure 4 MaxAbsScaler transformed data", fontsize=14)
+fig.suptitle('Figure 4 MaxAbsScaler transformed data', fontsize=14)
 
 for i, (ax, feature) in enumerate(zip(axs.flat, features)):
     ax.hist(data_max_abs_scaled[:, i], bins=n_bins)
@@ -143,17 +145,16 @@ for i, (ax, feature) in enumerate(zip(axs.flat, features)):
     ax.set_xlabel("Scaled value")
     ax.set_ylabel("Frequency")
 
-plt.tight_layout()
-plt.show()
+plt.tight_layout();plt.show()
 
-### RobustScaler
+#### RobustScaler
 robust_scaler = preprocessing.RobustScaler().fit(data)
 data_robust_scaled = robust_scaler.transform(data)
 
 print("Medians:", robust_scaler.center_)
 print("IQR scales:", robust_scaler.scale_)
 fig, axs = plt.subplots(2, 3, figsize=(14, 8))
-fig.suptitle("Figure 5 RobustScaler transformed data", fontsize=14)
+fig.suptitle('Figure 5 RobustScaler transformed data', fontsize=14)
 
 for i, (ax, feature) in enumerate(zip(axs.flat, features)):
     ax.hist(data_robust_scaled[:, i], bins=n_bins)
@@ -161,22 +162,17 @@ for i, (ax, feature) in enumerate(zip(axs.flat, features)):
     ax.set_xlabel("Robust-scaled value")
     ax.set_ylabel("Frequency")
 
-plt.tight_layout()
-plt.show()
+plt.tight_layout();plt.show()
 
 
 def scale_to_range(data, new_min=-5, new_max=10):
-    old_min = data.min(axis=0)
-    old_max = data.max(axis=0)
-    span = old_max - old_min
-
-    # Avoid division by zero for constant features.
-    safe_span = np.where(span == 0, 1, span)
+    old_min= data.min(axis=0)
+    old_max= data.max(axis=0)
+    span= old_max - old_min
+    safe_span= np.where(span == 0, 1, span)
 
     scaled = new_min + (data - old_min) / safe_span * (new_max - new_min)
-
-    # Constant features are mapped to new_min.
-    scaled[:, span == 0] = new_min
+    scaled[:, span== 0] = new_min
 
     return scaled
 
@@ -213,7 +209,7 @@ for n in [10, 50, 100, 299]:
         n_quantiles=n, output_distribution="uniform", random_state=0
     ).fit(data)
 
-    transformed = qt_uniform.transform(data)
+    transformed=qt_uniform.transform(data)
 
     print(
         f"Requested quantiles: {n}, " f"effective quantiles: {qt_uniform.n_quantiles_}"
@@ -230,7 +226,7 @@ data_quantile_normal = qt_normal.transform(data)
 ## PowerTransformer
 
 pt = preprocessing.PowerTransformer(  ## based on docs we can use both  methods "yeo-johnson or box-cox" because csv data are all positive
-    method="yeo-johnson", standardize=True
+    method=  "yeo-johnson", standardize=True
 ).fit(
     data
 )
@@ -256,7 +252,7 @@ plt.show()
 
 ## KBinsDiscretizer
 
-discretizer = preprocessing.KBinsDiscretizer(
+discretizer=preprocessing.KBinsDiscretizer(
     n_bins=[3, 4, 3, 10, 2, 4],  ## 6 bins for each column
     encode="ordinal",  # I got an error and this was the fix #TypeError: sparse array length is ambiguous; use getnnz() or shape[0]
     strategy="quantile",  # it was wrong because it defaulted to uniform which so I added it
@@ -267,7 +263,7 @@ data_discretized = discretizer.fit_transform(data)
 print(data_discretized)
 print("Output shape:", data_discretized.shape)
 
-fig, axs = plt.subplots(2, 3, figsize=(14, 8))
+fig, axs =plt.subplots(2, 3, figsize=(14, 8))
 fig.suptitle(
     "Figure 8 KBinsDiscretizer bin discretized data",
     fontsize=14,
@@ -276,7 +272,7 @@ for i, (ax, feature) in enumerate(zip(axs.flat, features)):
     ax.hist(
         data_discretized[:, i],
         bins=np.arange([3, 4, 3, 10, 2, 4][i] + 1) - 0.5,
-        rwidth=0.8,
+        rwidth =   0.8,
     )
     ax.set_title(feature)
     ax.set_xlabel("Bin index")
