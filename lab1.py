@@ -3,19 +3,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn import preprocessing
 
-df= pd.read_csv("heart_failure_clinical_records_dataset.csv")
+df= pd.read_csv('heart_failure_clinical_records_dataset.csv')
+
 
 df = df.drop(
     columns=[
-        "anaemia",
-        "diabetes",
-        "high_blood_pressure",
-        "sex",
-        "smoking",
-        "time",
-        "DEATH_EVENT",
+        "anaemia", "diabetes", "high_blood_pressure",
+        "sex", "smoking", "time", "DEATH_EVENT"
     ]
 )  # убираем бинарные признаки + time, как в задании
+
 
 # print(df)
 # print("Dataset shape:", df.shape)
@@ -24,8 +21,10 @@ df = df.drop(
 features = df.columns.tolist()
 n_bins = 20  # ? наверное потому что ~ sqrt(299)...
 
-fig, axs = plt.subplots(2, 3, figsize=(14, 8))
-fig.suptitle("Рис. 1. Распределения признаков до стандартизации", fontsize=14) #Figure 1 Raw data distributions before standardization
+fig,axs = plt.subplots(2,3, figsize=(14,8))
+fig.suptitle(
+    "Рис. 1. Распределения признаков до стандартизации", fontsize=14
+)  # Figure 1 Raw data distributions before standardization
 
 for ax, feature in zip(axs.flat, features):
     ax.hist(df[feature], bins=n_bins)
@@ -36,11 +35,12 @@ for ax, feature in zip(axs.flat, features):
 plt.tight_layout()
 plt.show()  # data before standardization
 
+
 data = df.to_numpy()
 # converting the dataframe to numpy
 
-    # print(data.shape)
-    # print(data[:5])
+# print(data.shape)
+# print(data[:5])
 ## standardization: we use z=(x-mu)/sigma for each feature/column
 # стандартизация=standardization
 # data_mean = np.mean(data, axis=0)
@@ -48,31 +48,32 @@ data = df.to_numpy()
 # data_standardized = (data - data_mean) / data_std
 
 
-scaler = preprocessing.StandardScaler().fit(
-    data[:150, :]
-)  # fit it only computes and stores three arrays per feature
+scaler = preprocessing.StandardScaler().fit(data[:150,:])  # fit it only computes and stores three arrays per feature
 
 print(
     "Средние по первым 150:", scaler.mean_
 )  # this mean is calculated from the first 150 rows #=means of first 150 rows
 print('Дисперсии (первые 150):', scaler.var_)  # variance  #=First 150 rows variances
-print('First 150 rows scales:', scaler.scale_)  # sqrt(var) #=First 150 rows scales
+print("First 150 rows scales:", scaler.scale_)  # sqrt(var) #=First 150 rows scales
 
 data_scaled = scaler.transform(data)
+
 # Verify StandardScaler's formula manually
-manual_scaled = (data - scaler.mean_) / scaler.scale_
-print(np.allclose(manual_scaled, data_scaled))
-print(np.mean(data[:150], axis=0) - scaler.mean_)
-print(np.var(data[:150], axis=0) - scaler.var_)
+manual_scaled = (data-scaler.mean_)/scaler.scale_
+print( np.allclose(manual_scaled, data_scaled) )
+print( np.mean(data[:150], axis=0) - scaler.mean_ )
+print( np.var(data[:150], axis=0) - scaler.var_ )
+
 print(
-    "форма после стандартизации:", data_scaled.shape #=Shape after standardization
+    "форма после стандартизации:", data_scaled.shape  # =Shape after standardization
 )  # Check: Standardization changes the values not the number of observations or features
+
 
 fig, axs = plt.subplots(2, 3, figsize=(14, 8))
 fig.suptitle(
     "Рис. 2. StandardScaler: fit на первых 150 строках, transform на всех 299)",
     fontsize=14,
-) #Figure 2 Standardized data with StandardScaler fit on first 150 rows; all 299 rows transformed)
+)  # Figure 2 Standardized data with StandardScaler fit on first 150 rows; all 299 rows transformed)
 
 for i, (ax, feature) in enumerate(zip(axs.flat, features)):
     ax.hist(data_scaled[:, i], bins=n_bins)
@@ -80,25 +81,29 @@ for i, (ax, feature) in enumerate(zip(axs.flat, features)):
     ax.set_xlabel("Standardized value")
     ax.set_ylabel("Frequency")
 
-plt.tight_layout()
-plt.show()  ## show standardized plt, it's the 2nd one
 
-print("Средние по всем 299:") #=Original 299 rows means
+plt.tight_layout()
+plt.show()  ## показываем стандартизированные графики, это вторая картинка
+
+
+print("Средние по всем 299:")  # =Original 299 rows means
 print(np.mean(data, axis=0))
 
 print("Original 299 rows standard deviations:")
 print(np.std(data, axis=0, ddof=0))
 
 print(
-    "Средние после стандартизации:" #=Standardized means
+    "Средние после стандартизации:"  # =Standardized means
 )  # sanity check for the first one: z=(x-mu)/sigma=(60.83−62.95)/12.45=−0.17 👉️ shouldn't it be zero?
 # #it's because it was standardized!
-print(np.mean(data_scaled, axis=0))
+print(np.mean(data_scaled,axis=0))
+
 
 print("Standardized standard deviations:")
 print(
     np.std(data_scaled, axis=0, ddof=0)
 )  # std_deviation/sigma 11.87/12.45=0.95 👉️ should be one?
+
 
 scaler_all = preprocessing.StandardScaler().fit(data)
 data_scaled_all = scaler_all.transform(data)
@@ -108,12 +113,14 @@ print("mean_ (все 299):", scaler_all.mean_)
 print("var_ (первые 150):", scaler.var_)
 print("var_ (все 299):", scaler_all.var_)
 
+
 ####---- MinMaxScaler####
 min_max_scaler = preprocessing.MinMaxScaler().fit(data)
 data_min_max_scaled = min_max_scaler.transform(data)
 
 print("Minimums:", min_max_scaler.data_min_)
 print("Maximums:", min_max_scaler.data_max_)
+
 print("Scaled minima:", data_min_max_scaled.min(axis=0))
 print("Scaled maxima:", data_min_max_scaled.max(axis=0))
 
@@ -121,8 +128,8 @@ fig, axs = plt.subplots(2, 3, figsize=(14, 8))
 fig.suptitle(
     "Рис. 3. MinMaxScaler",
     fontsize=14,
-) #Figure 3 Tra nsformed data with MinMaxScaler
-for i, (ax, feature) in enumerate(zip(axs.flat, features)):
+)  # Figure 3 Tra nsformed data with MinMaxScaler
+for i,(ax,feature) in enumerate(zip(axs.flat, features)):
     ax.hist(data_min_max_scaled[:, i], bins=n_bins)
     ax.set_title(feature)
     ax.set_xlabel("Scaled value")
@@ -136,6 +143,8 @@ print("min_:", min_max_scaler.min_)
 plt.tight_layout()
 plt.show()
 
+
+
 ### MaxAbsScaler
 max_abs_scaler = preprocessing.MaxAbsScaler().fit(data)
 data_max_abs_scaled = max_abs_scaler.transform(data)
@@ -143,7 +152,9 @@ data_max_abs_scaled = max_abs_scaler.transform(data)
 print("Maximum absolute values:", max_abs_scaler.max_abs_)
 
 fig, axs = plt.subplots(2, 3, figsize=(14, 8))
-fig.suptitle('Рис. 4. MaxAbsScaler', fontsize=14) #Figure 4 MaxAbsScaler transformed data
+fig.suptitle(
+    "Рис. 4. MaxAbsScaler", fontsize=14
+)  # Figure 4 MaxAbsScaler transformed data
 
 for i, (ax, feature) in enumerate(zip(axs.flat, features)):
     ax.hist(data_max_abs_scaled[:, i], bins=n_bins)
@@ -151,7 +162,9 @@ for i, (ax, feature) in enumerate(zip(axs.flat, features)):
     ax.set_xlabel("Scaled value")
     ax.set_ylabel("Frequency")
 
-plt.tight_layout();plt.show()
+plt.tight_layout(); plt.show()
+
+
 
 #### RobustScaler
 robust_scaler = preprocessing.RobustScaler().fit(data)
@@ -159,8 +172,11 @@ data_robust_scaled = robust_scaler.transform(data)
 
 print("Medians:", robust_scaler.center_)
 print("IQR scales:", robust_scaler.scale_)
+
 fig, axs = plt.subplots(2, 3, figsize=(14, 8))
-fig.suptitle('Рис. 5. RobustScaler', fontsize=14) #Figure 5 RobustScaler transformed data
+fig.suptitle(
+    "Рис. 5. RobustScaler", fontsize=14
+)  # Figure 5 RobustScaler transformed data
 
 for i, (ax, feature) in enumerate(zip(axs.flat, features)):
     ax.hist(data_robust_scaled[:, i], bins=n_bins)
@@ -168,17 +184,17 @@ for i, (ax, feature) in enumerate(zip(axs.flat, features)):
     ax.set_xlabel("Robust-scaled value")
     ax.set_ylabel("Frequency")
 
-plt.tight_layout();plt.show()
+plt.tight_layout(); plt.show()
 
 
 def scale_to_range(data, new_min=-5, new_max=10):
     old_min= data.min(axis=0)
     old_max= data.max(axis=0)
-    span= old_max - old_min
-    safe_span= np.where(span == 0, 1, span)
+    span = old_max - old_min
+    safe_span = np.where(span == 0, 1, span)
 
-    scaled = new_min + (data - old_min) / safe_span * (new_max - new_min)
-    scaled[:, span== 0] = new_min
+    scaled = new_min + (data - old_min)/safe_span * (new_max - new_min)
+    scaled[:, span == 0] = new_min
 
     return scaled
 
@@ -187,6 +203,8 @@ data_custom_scaled = scale_to_range(data)
 
 print("Minimums:", data_custom_scaled.min(axis=0))
 print("Maximums:", data_custom_scaled.max(axis=0))
+
+
 
 ### Quantile Transdormer
 qt_uniform = preprocessing.QuantileTransformer(
@@ -198,7 +216,7 @@ data_quantile_scaled = qt_uniform.transform(data)
 fig, axs = plt.subplots(2, 3, figsize=(14, 8))
 fig.suptitle(
     "Рис. 6. QuantileTransformer, равномерное распределение на выходе", fontsize=14
-) #Figure 6 QuantileTransformer transformed data (uniform output)
+)  # Figure 6 QuantileTransformer transformed data (uniform output)
 
 for i, (ax, feature) in enumerate(zip(axs.flat, features)):
     ax.hist(data_quantile_scaled[:, i], bins=n_bins)
@@ -216,14 +234,15 @@ for n in [10, 50, 100, 299]:
         n_quantiles=n, output_distribution="uniform", random_state=0
     ).fit(data)
 
-    transformed=qt_uniform.transform(data)
+    transformed = qt_uniform.transform(data)
 
-    print(
-        f"Requested quantiles: {n}, " f"effective quantiles: {qt_uniform.n_quantiles_}"
-    )
+    print(f"Requested quantiles: {n}, " f"effective quantiles: {qt_uniform.n_quantiles_}")
+
 
 fig, axs = plt.subplots(2, 3, figsize=(14, 8))
-fig.suptitle("Рис. 7. Собственное приведение к диапазону [-5, 10]", fontsize=14) #Figure 7 Custom scaling to [-5, 10]
+fig.suptitle(
+    "Рис. 7. Собственное приведение к диапазону [-5, 10]", fontsize=14
+)  # Figure 7 Custom scaling to [-5, 10]
 
 for i, (ax, feature) in enumerate(zip(axs.flat, features)):
     ax.hist(data_custom_scaled[:, i], bins=n_bins)
@@ -231,8 +250,9 @@ for i, (ax, feature) in enumerate(zip(axs.flat, features)):
     ax.set_xlabel("Scaled value")
     ax.set_ylabel("Frequency")
 
-plt.tight_layout()
-plt.show()
+plt.tight_layout(); plt.show()
+
+
 ### QUantileTransformation Normal Distribution
 qt_normal = preprocessing.QuantileTransformer(
     n_quantiles=100, output_distribution="normal", random_state=0
@@ -243,7 +263,7 @@ fig, axs = plt.subplots(2, 3, figsize=(14, 8))
 fig.suptitle(
     "Рис. 8. QuantileTransformer, нормальное распределение на выходе",
     fontsize=14,
-) #Figure 8 QuantileTransformer with normal output distribution
+)  # Figure 8 QuantileTransformer with normal output distribution
 
 for i, (ax, feature) in enumerate(zip(axs.flat, features)):
     ax.hist(data_quantile_normal[:, i], bins=n_bins)
@@ -254,13 +274,12 @@ for i, (ax, feature) in enumerate(zip(axs.flat, features)):
 plt.tight_layout()
 plt.show()
 
-## PowerTransformer
 
-pt = preprocessing.PowerTransformer(  ## based on docs we can use both  methods "yeo-johnson or box-cox" because csv data are all positive
-    method=  "yeo-johnson", standardize=True
-).fit(
-    data
-)
+
+## PowerTransformer
+pt = preprocessing.PowerTransformer(  ## по документации можно использовать оба метода ("yeo-johnson" или "box-cox"), потому что данные в csv все положительные
+    method="yeo-johnson", standardize=True
+).fit(data)
 
 data_power_scaled = pt.transform(data)
 
@@ -269,8 +288,8 @@ fig, axs = plt.subplots(2, 3, figsize=(14, 8))
 fig.suptitle(
     "Рис. 9. PowerTransformer (Yeo–Johnson, со стандартизацией)",
     fontsize=14,
-) #Figure 9 Power-transformed feature distributions (Yeo Johnson, standardized)
-for i, (ax, feature) in enumerate(zip(axs.flat, features)):
+)  # Figure 9 Power-transformed feature distributions (Yeo Johnson, standardized)
+for i,(ax,feature) in enumerate(zip(axs.flat, features)):
     ax.hist(data_power_scaled[:, i], bins=n_bins)
     ax.set_title(feature)
     ax.set_xlabel("Power-transformed value")
@@ -281,8 +300,8 @@ plt.show()
 ###
 
 
-## KBinsDiscretizer
 
+## KBinsDiscretizer
 discretizer=preprocessing.KBinsDiscretizer(
     n_bins=[3, 4, 3, 10, 2, 4],  ## 6 bins for each column
     encode="ordinal",  # I got an error and this was the fix #TypeError: sparse array length is ambiguous; use getnnz() or shape[0]
@@ -294,16 +313,16 @@ data_discretized = discretizer.fit_transform(data)
 print(data_discretized)
 print("Output shape:", data_discretized.shape)
 
-fig, axs =plt.subplots(2, 3, figsize=(14, 8))
+fig, axs = plt.subplots(2, 3, figsize=(14, 8))
 fig.suptitle(
     "Рис. 10. Дискретизация KBinsDiscretizer",
     fontsize=14,
-) #Figure 10 KBinsDiscretizer bin discretized data
+)  # Figure 10 KBinsDiscretizer bin discretized data
 for i, (ax, feature) in enumerate(zip(axs.flat, features)):
     ax.hist(
         data_discretized[:, i],
         bins=np.arange([3, 4, 3, 10, 2, 4][i] + 1) - 0.5,
-        rwidth =   0.8,
+        rwidth=0.8,
     )
     ax.set_title(feature)
     ax.set_xlabel("Bin index")
